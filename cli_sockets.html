@@ -1,0 +1,100 @@
+<html>
+<head>
+
+<script src="./socket.io.js"></script>
+<script src="./body parts.js"></script> <!--just some object data for testing-->
+<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+<script>
+var server = 'localhost'
+, chit_chat = io.connect(server +'/chitChat',{port:3001})
+, timeoutCnt = 0
+, timeoutCntMax = 10 <!-- Time out stuff-->
+, connected = false <!-- data flags -->
+, fnameSent = false
+, dnameSent = false
+, dataSent = false
+, doneSent = false 
+, dataToSend = [partsCols,parts] <!-- prep of data to send --->
+, dataNamesToSend = ["partsCols","parts"]
+, dataSentCnt = 0
+, fileName = "rec.js"
+<!-- data sending pipe functions -->
+, sendFname = function(fname){
+	chit_chat.emit('fname',{message:fname});
+	chit_chat.on('fname',function(message){message['message']=='ack' ? fnameSent = true:fnameSent = false;});}
+, sendDname = function(dname){
+	chit_chat.emit('dname',{message:dname});
+	chit_chat.on('dname',function(message){message['message']=='ack' ? dnameSent = true:dnameSent = false;});}
+, sendData = function(data){
+	chit_chat.emit('data',{message:data});
+	console.log(data);
+	chit_chat.on('data',function(message){message['message']=='ack' ? dataSent = true:dataSent = false;});}
+, sendWrite = function(){
+	chit_chat.emit('done',{message:'write'});
+	console.log("doneSent");
+	chit_chat.on('done',function(message){message['message']=='ack' ? doneSent = true:doneSent = false;});}
+;
+<!-- wait for server to return hello to confirm connection exist -->
+chit_chat.on('hello',function(message){if(message['message'] == 'hello')connected=true;chit_chat.emit('hello',{message:'hello'});$("#mess").text("Connected");});
+<!-- actual calling of pipe function  used with 'sendServerLoop' function to step through data sending functions-->
+function sendToServer(data,dataNames,fname,cnt)
+{
+	if(connected && !fnameSent && cnt == 0)sendFname(fname); <!-- filename to write objects to-->
+	if(cnt >= 0) <!--if cnt -1 all objects sent -->
+	{
+		if(fnameSent && !dnameSent)sendDname(dataNames[cnt]); <!-- array of object var names -->
+		if(dnameSent && !dataSent)sendData(data[cnt]);		  <!-- array of objects -->
+	}
+	if(dataSent && !doneSent)sendWrite(); <!-- all data sent  do write file -->
+}
+
+function sendServerLoop()
+{
+	t=setTimeout(function(){ <!-- give time for server to send ack -->
+		if(dataSent && dataSentCnt >= 0)dataSentCnt++; <!-- if obj var and object sent send next ones-->
+		if(dataSentCnt === dataToSend.length)dataSentCnt = -1; <!-- if all objects sent send -1 flag to sender via cnt -->
+		if(dataSentCnt >= 0 && dataSent)
+		{
+			dataSent=false; <!-- clear flags to send next object -->
+			dnameSent=false;
+		}
+		if(!doneSent){ <!-- if not finished after time out call sender -->
+			sendToServer(dataToSend,dataNamesToSend,fileName,dataSentCnt);
+			if(timeoutCnt++ > timeoutCntMax) <!-- if more than max timeouts sender failed -->
+			{
+				alert("timeout");
+				resetConn();
+				}else{
+					sendServerLoop(); <!-- keep trying -->
+				}
+		}else{
+			alert("data sent and written"); <!-- Hey it worked! -->
+			resetConn();
+		}
+	},50);
+}
+
+function buttClick()
+{
+	
+	 <!-- confirm pipe still open -->
+	sendServerLoop();
+}
+
+function resetConn()
+{
+	fnameSent = false;
+	dnameSent = false;
+	dataSent = false;
+	doneSent = false;
+	dataSentCnt = 0;
+	timeoutCnt = 0;
+	//connected = false;
+}
+</script>
+</head>
+<body >
+<div id="mess">waiting Sockets ok</div>
+<input type="button" onclick="buttClick()" value="save"/>
+</body>
+</html>
