@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
+		<title>ADD Title</title>
+		<script type="text/javascript" src="./js/body parts.js"></script>
+		<script src="./js/jquery-1.8.2.js"></script>
+		<script src="./js/jquery-ui-1.9.0.custom.js"></script>
+		<script type="text/javascript"  src="./js/partsDev.js"></script>
+		<script src="./js/socket.io.js"></script>
+		<script src="./js/parts.io.js"></script>
+		<script type="text/javascript">		 
+			conn.server="localhost";
+			conn.connect('/chitChat',3001);
+			$( "#saveButt" ).attr({disabled:"disabled"});
+			$(document).ready(function()
+			{
+				if(typeof(parts == "undefined")) $( "#add" ).attr({disabled:"disabled"});
+				$( "#remove" ).attr({disabled:"disabled"});
+				$( "#setBlock" ).attr({disabled:"disabled"});
+				$( "#editPartDialog" ).dialog({autoOpen:false,width:450,modal: true},{open:function(e,ui){loadDiaValues();}});
+				$( "#addPartDialog" ).dialog({autoOpen:false,width:450,modal: true},{open:function(e,ui){newAddLoad();}});
+				$( ".dialog" ).css({visibility: "visible"});
+				$( "#editButt" ).removeAttr("disabled");
+				$( "#addButt" ).attr({disabled:"disabled"});
+				if(conn.connected)$("#saveButt").removeAttr("disable");
+				getFiles();
+			});
+			
+			function saveButt()
+			{
+				if(conn.fileName.length > 5)
+				{
+					conn.dataToSend=[parts,partsCols,blockData];
+					conn.dataNamesToSend = ["parts","partsCols","blockData"];
+					conn.sendServerLoop();
+				}else{
+					alert("no file name");
+				}
+			}
+		</script>
+		<link rel="stylesheet" type="text/css" href="./css/partsDev.css">
+		<link rel="stylesheet" href="./css/jquery-ui-1.9.0.custom.css" />
+		<style>
+
+		</style>
+	</head>
+	<body>		
+		<table border="1">
+			<tr>
+				<td>
+					<input type="text" value="body parts" id="files"/>
+					<input type="button" onclick="getFiles()" value="Open"/></br>
+					<input type="button" id="saveButt" onclick="saveButt()" value="Save"/></br>
+				</td>
+				<td>
+					Balloon #
+					<input type="text" id="balloon" onkeyup="validateInput(this,event)">
+					<input type="button" value="Set" id="setBlock" onclick="setBlock()" />
+					<input type="button" id="add" value="Add Block" onclick="makeBlock(100,150)" />
+					<input type="button" id="remove" value="Remove Block" onclick="removeBlock()" />
+				</td>
+				<td>
+				</td>
+			</tr>
+		</table>
+		<textarea class="ptext" id="partText" cols="15" rows="1" readonly> Ready </textarea>
+		<table border="1">
+			<tr>
+				<td rowspan="3" class="pictab" id="mainpictab">
+					<img src= "images/body parts.jpg" alt="" class="pic" id="mainpic"  style="left:0;top:0;" onclick="quickBlock(event)" />
+				</td>
+				<td class="pictab" valign="top" id="smallpic">
+					<img class="partpic" id="partpic" src= "images/H03-101.jpg" />
+				</td>
+			</tr>
+			<tr>
+				<td class="partdesc">
+					<div id="descTitle" class="displTitle"></div>
+					<div id="descItem" class="displ">Item: </div>
+					<div id="descNumber" class="displ">Part#: </div>
+					<div id="descDesc" class="displ">Description: </div>
+					<div id="descQty" class="displ">Qty: </div>
+				</td>
+			</tr>
+			<tr>
+				<td class="partform" id="form">
+					<input type="button" value="Edit" id='edit' onClick="editButt()"/>
+				</td>
+			</tr>
+		</table>
+		<div id="blocks"></div>
+		<div id='editPartDialog' class="dialog" title ="Edit Part" >
+			Part # <input type="text" id="diaNumber"/></br>
+			Description <input type="text" id="diaDesc" /></br>
+			Quantity <input type="text" id="diaQty"/></br>
+			onClick <input type='text' id="diaClick" /></br>
+			Image <input type='file' id="diaFile" accept=".jpg,.jpeg"></br>
+			<input type='button' id="editButt" onclick='diaAccept()' value='accept' disabled="disabled"/>
+		</div>
+		<div id='addPartDialog' class="dialog" title ="Add Part">
+			Item <input type="text" id="newItem" class="newDiaItem" onkeyup="itemInput(this)"/> </br>
+			Part # <input type="text" id="newNumber" class="newDia"/></br>
+			Description <input type="text" id="newDesc" class="newDia"/></br>
+			Quantity <input type="text" id="newQty" class="newDia"/></br>
+			Image <input type='file' id="newFile" accept=".jpg,.jpeg" class="newDia"></br>
+			<input type='button' id= "addButt" onclick='newAdd()' value='add' class="newDia"/>
+		</div>
+	</body>
+</html>

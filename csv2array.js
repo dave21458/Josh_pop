@@ -23,12 +23,13 @@ fs.readFile(srcName,function(err,file)
         console.log("open file error " + srcName); 
         return;  
     } 
+	var newcols=['','qty','number','desc'];
 	//split into lines of csv
 	var lines=file.toString().split(String.fromCharCode(0x0d,0x0a));
 	//split 1st line (column descriptions) to define  'partsCols' object 
 	var cols=lines[0].split(",");
 	var arrDef = "var partsCols={";
-	for(cnt=1;cnt<cols.length;cnt++)arrDef += '"c' + cnt.toString() + '":"' + cols[cnt] + '",';
+	for(cnt=1;cnt<cols.length;cnt++)arrDef += '"' + newcols[cnt] + '":"' + cols[cnt] + '",';
 	arrDef = arrDef.substr(0,arrDef.length-1) + "};\n";
 	//split remaining lines to def 'parts' object
 	arrDef += "var parts={";
