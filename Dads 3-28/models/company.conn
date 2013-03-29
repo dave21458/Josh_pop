@@ -1,0 +1,7 @@
+module.exports = 
+{
+		"host": "localhost"
+		, "database" : "companies"
+		, "user" : null
+		, "password" : null		
+}

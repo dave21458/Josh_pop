@@ -1,0 +1,1 @@
+module.exports = {'ref' : String, 'label' : String, 'tree':Array, 'files':Array}

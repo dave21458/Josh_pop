@@ -1,0 +1,6 @@
+module.exports =
+{
+ref : String,
+ label : String,
+ drawers : Array
+};
